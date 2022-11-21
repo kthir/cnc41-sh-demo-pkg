@@ -6,9 +6,11 @@
 2) The custom folder is the modified version that can be tarred and then imported - see next step.
 
 tar --disable-copyfile -cvzf import-hp.tar.gz custom
-# This still gives the following errors when untarred
-# tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.quarantine'
-# use the following for that (not confirmed)
+
+
+This still gives the following errors when untarred
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.quarantine'
+use the following for that (not confirmed)
 
 tar --no-xattrs --disable-copyfile -cvzf import-hp.tar.gz custom
 

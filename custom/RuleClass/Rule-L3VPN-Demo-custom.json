@@ -1,0 +1,314 @@
+{
+ "name": "Rule-L3VPN-Demo",
+ "namespace": "custom",
+ "id": "Rule-L3VPN-Demo custom",
+ "description": "Rule to generate Assurance Graph for DEMO L3VPN services",
+ "matchCriteria": [
+  {
+   "configSource": "SOURCE_TYPE_NSO",
+   "matchType": "MATCH_TYPE_XPATH",
+   "matchExpression": "//l3vpn"
+  }
+ ],
+ "dependencies": [
+  {
+   "name": "CE-PE-Route-Health",
+   "id": "subservice.ce.pe.route.health system",
+   "ssClass": "subservice.ce.pe.route.health",
+   "namespace": "system",
+   "type": "DEP_TYPE_LIST",
+   "paramExtractionMechanism": {
+    "mode": "EXTRACT_MODE_XPATH"
+   },
+   "parameters": [
+    {
+     "name": "device",
+     "iterator": true,
+     "extractionMethod": "DEP_PARAM_XPATH",
+     "extractionDetails": [
+      {
+       "extractValue": "//endpoint/pe-device"
+      }
+     ]
+    },
+    {
+     "name": "vrf",
+     "extractionMethod": "DEP_PARAM_XPATH",
+     "extractionDetails": [
+      {
+       "extractValue": "//name"
+      },
+      {
+       "description": "Flat Model. This should be defined as 'iterator' in flat-model as vrf is defined per endpoint.",
+       "extractValue": "//flat-L3vpn/endpoint/vrf/vrf-definition"
+      }
+     ]
+    }
+   ],
+   "subDependencies": [
+    "ebgp-nbr-health[]"
+   ]
+  },
+  {
+   "name": "ebgp-nbr-health",
+   "id": "subservice.ebgp.nbr.health system",
+   "ssClass": "subservice.ebgp.nbr.health",
+   "namespace": "system",
+   "type": "DEP_TYPE_LIST",
+   "optional": true,
+   "paramExtractionMechanism": {
+    "mode": "EXTRACT_MODE_CUSTOM_PLUGIN",
+    "name": "demo_l3vpn_plugin.py",
+    "namespace": "custom",
+    "pluginMethod": "run",
+    "extractedParams": [
+     "device",
+     "vrf",
+     "bgp_nbr_type",
+     "bgp_nbr_ipaddrs"
+    ]
+   },
+   "parameters": [
+    {
+     "name": "device",
+     "extractionMethod": "DEP_PARAM_PLUGIN_OUTPUT",
+     "extractionDetails": [
+      {
+       "extractValue": "//plugin-output/device"
+      }
+     ]
+    },
+    {
+     "name": "bgp_nbr_type",
+     "extractionMethod": "DEP_PARAM_PLUGIN_OUTPUT",
+     "extractionDetails": [
+      {
+       "extractValue": "//plugin-output/bgp_nbr_type"
+      }
+     ]
+    },
+    {
+     "name": "vrf",
+     "extractionMethod": "DEP_PARAM_PLUGIN_OUTPUT",
+     "extractionDetails": [
+      {
+       "extractValue": "//plugin-output/vrf"
+      }
+     ]
+    },
+    {
+     "name": "bgp_nbr_ipaddrs",
+     "extractionMethod": "DEP_PARAM_PLUGIN_OUTPUT",
+     "extractionDetails": [
+      {
+       "extractValue": "//plugin-output/bgp_nbr_ipaddrs"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "vpn-if-health-list",
+   "id": "subservice.interface.health system",
+   "ssClass": "subservice.interface.health",
+   "namespace": "system",
+   "type": "DEP_TYPE_LIST",
+   "paramExtractionMechanism": {
+    "mode": "EXTRACT_MODE_CUSTOM_PLUGIN",
+    "name": "demo_l3vpn_plugin.py",
+    "namespace": "custom",
+    "pluginMethod": "run",
+    "extractedParams": [
+     "device",
+     "ifId"
+    ]
+   },
+   "parameters": [
+    {
+     "name": "device",
+     "extractionMethod": "DEP_PARAM_PLUGIN_OUTPUT",
+     "extractionDetails": [
+      {
+       "extractValue": "//plugin-output/device"
+      }
+     ]
+    },
+    {
+     "name": "ifId",
+     "extractionMethod": "DEP_PARAM_PLUGIN_OUTPUT",
+     "extractionDetails": [
+      {
+       "extractValue": "//plugin-output/ifId"
+      }
+     ]
+    }
+   ],
+   "softSubDependencies": [
+    "device-health-list[]"
+   ]
+  },
+  {
+   "name": "device-health-list",
+   "id": "subservice.device.health system",
+   "ssClass": "subservice.device.health",
+   "namespace": "system",
+   "type": "DEP_TYPE_LIST",
+   "paramExtractionMechanism": {
+    "mode": "EXTRACT_MODE_XPATH"
+   },
+   "parameters": [
+    {
+     "name": "device",
+     "iterator": true,
+     "extractionMethod": "DEP_PARAM_XPATH",
+     "extractionDetails": [
+      {
+       "extractValue": "//devices/device/key"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Path-Reachability-To-Peers",
+   "id": "subservice.vrf.path.reachability.to.peers system",
+   "ssClass": "subservice.vrf.path.reachability.to.peers",
+   "namespace": "system",
+   "type": "DEP_TYPE_LIST",
+   "paramExtractionMechanism": {
+    "mode": "EXTRACT_MODE_XPATH"
+   },
+   "parameters": [
+    {
+     "name": "device",
+     "iterator": true,
+     "extractionMethod": "DEP_PARAM_XPATH",
+     "extractionDetails": [
+      {
+       "extractValue": "//devices/device/key"
+      }
+     ]
+    },
+    {
+     "name": "vrf",
+     "extractionMethod": "DEP_PARAM_XPATH",
+     "extractionDetails": [
+      {
+       "extractValue": "//name"
+      },
+      {
+       "description": "Flat Model. This should be defined as 'iterator' in flat-model as vrf is defined per endpoint.",
+       "extractValue": "//flat-L3vpn/endpoint/vrf/vrf-definition"
+      }
+     ]
+    }
+   ],
+   "subDependencies": [
+    "Vrf-Plain-Lsp-Reachability[]"
+   ]
+  },
+  {
+   "name": "Vrf-Plain-Lsp-Reachability",
+   "id": "subservice.vrf.plain.lsp.reachability system",
+   "ssClass": "subservice.vrf.plain.lsp.reachability",
+   "namespace": "system",
+   "type": "DEP_TYPE_LIST",
+   "paramExtractionMechanism": {
+    "mode": "EXTRACT_MODE_CUSTOM_PLUGIN",
+    "name": "demo_l3vpn_plugin.py",
+    "namespace": "custom",
+    "pluginMethod": "run",
+    "extractedParams": [
+     "device",
+     "vrf",
+     "peer-vpn-addr-list"
+    ]
+   },
+   "parameters": [
+    {
+     "name": "device",
+     "extractionMethod": "DEP_PARAM_PLUGIN_OUTPUT",
+     "extractionDetails": [
+      {
+       "extractValue": "//plugin-output/device"
+      }
+     ]
+    },
+    {
+     "name": "vrf",
+     "extractionMethod": "DEP_PARAM_PLUGIN_OUTPUT",
+     "extractionDetails": [
+      {
+       "extractValue": "//plugin-output/vrf"
+      }
+     ]
+    },
+    {
+     "name": "peer-vpn-addr-list",
+     "extractionMethod": "DEP_PARAM_PLUGIN_OUTPUT",
+     "extractionDetails": [
+      {
+       "extractValue": "//plugin-output/peer-vpn-addr-list"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "PCEP-Session-Health-list",
+   "id": "subservice.pcep.session.health system",
+   "ssClass": "subservice.pcep.session.health",
+   "namespace": "system",
+   "type": "DEP_TYPE_LIST",
+   "paramExtractionMechanism": {
+    "mode": "EXTRACT_MODE_XPATH"
+   },
+   "parameters": [
+    {
+     "name": "device",
+     "iterator": true,
+     "extractionMethod": "DEP_PARAM_XPATH",
+     "extractionDetails": [
+      {
+       "extractValue": "//devices/device/key"
+      }
+     ]
+    },
+    {
+     "name": "serviceType",
+     "extractionMethod": "DEP_PARAM_VALUE",
+     "extractionDetails": [
+      {
+       "description": "For L3VPNs, PCEP session health will always be monitored.",
+       "extractValue": "L3VPN"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "bgp-nbr-health-list",
+   "id": "subservice.bgp.nbr.health system",
+   "ssClass": "subservice.bgp.nbr.health",
+   "namespace": "system",
+   "type": "DEP_TYPE_LIST",
+   "paramExtractionMechanism": {
+    "mode": "EXTRACT_MODE_XPATH"
+   },
+   "parameters": [
+    {
+     "name": "device",
+     "iterator": true,
+     "extractionMethod": "DEP_PARAM_XPATH",
+     "extractionDetails": [
+      {
+       "extractValue": "//devices/device/key"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "createTimestamp": "1666996442512912799",
+ "monitoringType": "ADVANCED"
+}
