@@ -4,6 +4,7 @@ import lxml.etree as ET
 import lxml.objectify as objectify
 from json2xml import json2xml
 import ipaddress
+import re
 
 
 # from bs4 import BeautifulSoup
@@ -112,13 +113,30 @@ def extract_subservice_vpn_interfaces_payload(root, test_run):
 
         # Assumes exactly one PE-CE interface on this vrf/vpn
         interfacename_path=".//devices/device[key='{device}']/config/interface/*".format(device=device)
-        interfaceid_path=".//devices/device[key='{device}']/config/interface/*/key".format(device=device)
 
         device_interfacename_record = root.xpath(interfacename_path)
+        #print(device_interfacename_record[0].tag+"--->"+device_interfacename_record[0].text)
+        # if subinterface, do some other things to get subinterface id
+        parent=re.search("(.*)-subinterface",device_interfacename_record[0].tag)
+        if (parent == None):
+            # assumption is just one interface on this device for this service
+            interfaceid_path=".//devices/device[key='{device}']/config/interface/*/key".format(device=device)
+        else:
+            # subinterface case, again assuming only one in a device per service
+            # get the interface name item and replace interfacename, it is one child node below
+            interfacename_path=".//devices/device[key='{device}']/config/interface/*/*".format(device=device)
+            device_interfacename_record = root.xpath(interfacename_path)
+            # Assumption is just one subinterface for this service on this device.
+            interfaceid_path=".//devices/device[key='{device}']/config/interface/*/*/key".format(device=device)
+
+
         device_interfaceid_record = root.xpath(interfaceid_path)
+        #print(device_interfacename_record[0].tag+"--->"+device_interfaceid_record[0].tag)
         result["ifId"] = device_interfacename_record[0].tag + device_interfaceid_record[0].text
         result_xml = json2xml.Json2xml(result, wrapper="plugin-output", pretty=True, attr_type=False).to_xml()
         result_list.append(result_xml)
+
+        
     return result_list
 
 # Payload Extraction logic for subservice.ebgp.nbr.health
